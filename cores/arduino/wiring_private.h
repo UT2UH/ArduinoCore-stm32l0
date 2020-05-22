@@ -68,12 +68,11 @@ extern void USBD_Teardown(void);
 extern void USBD_Attach(void);
 extern void USBD_Detach(void);
 extern void USBD_Wakeup(void);
-extern void USBD_Poll(void);
 extern bool USBD_Attached(void);
 extern bool USBD_Connected(void);
 extern bool USBD_Configured(void);
 extern bool USBD_Suspended(void);
-extern void USBD_SetupVBUS(bool park);
+extern void USBD_SetupVBUS(bool wakeup);
 
 extern void CMWX1ZZABZ_Initialize(uint16_t pin_tcxo, uint16_t pin_stsafe);
 extern void SX1272MB2DAS_Initialize(void);

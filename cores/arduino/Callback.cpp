@@ -34,20 +34,20 @@
  * to the Itanium C++ ABI.
  */
 
-bool Callback::queue() {
+bool Callback::queue(bool wakeup) {
     if (_callback) {
         return armv6m_pendsv_enqueue((armv6m_pendsv_routine_t)_callback, _context, 0);
     } else {
-        stm32l0_system_wakeup();
-        return false;
+	if (wakeup) {
+	    stm32l0_system_wakeup(STM32L0_SYSTEM_EVENT_APPLICATION);
+	}
+	return false;
     }
 }
 
 void Callback::call() {
     if (_callback) {
         (*_callback)(_context);
-    } else {
-        stm32l0_system_wakeup();
     }
 }
 

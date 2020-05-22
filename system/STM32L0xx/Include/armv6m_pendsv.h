@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2018 Thomas Roell.  All rights reserved.
+ * Copyright (c) 2014-2020 Thomas Roell.  All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -36,10 +36,10 @@ extern "C" {
 typedef void (*armv6m_pendsv_callback_t)(void);
 typedef void (*armv6m_pendsv_routine_t)(void *context, uint32_t data);
 
-extern void armv6m_pendsv_initialize(void);
-extern void armv6m_pendsv_notify(armv6m_pendsv_callback_t callback);
-extern bool armv6m_pendsv_enqueue(armv6m_pendsv_routine_t routine, void *context, uint32_t data);
+extern void __armv6m_pendsv_initialize(void);
 
+extern void armv6m_pendsv_hook(armv6m_pendsv_callback_t callback);
+extern bool armv6m_pendsv_enqueue(armv6m_pendsv_routine_t routine, void *context, uint32_t data);
 extern bool armv6m_pendsv_raise(uint32_t index);
 extern void armv6m_pendsv_block(uint32_t mask);
 extern void armv6m_pendsv_unblock(uint32_t mask);
@@ -52,6 +52,7 @@ extern void SWI4_IRQHandler(void);
 extern void SWI5_IRQHandler(void);
 extern void SWI6_IRQHandler(void);
 extern void SWI7_IRQHandler(void);
+extern void SWI8_IRQHandler(void);
 extern void SWI9_IRQHandler(void);
 extern void SWI10_IRQHandler(void);
 extern void SWI11_IRQHandler(void);
@@ -83,7 +84,10 @@ extern void SWI31_IRQHandler(void);
 #define ARMV6M_PENDSV_SWI_RTC_MODIFY        3
 #define ARMV6M_PENDSV_SWI_RTC_ALARM         4
 #define ARMV6M_PENDSV_SWI_RTC_TIMER         5
-#define ARMV6M_PENDSV_SWI_WORK_SCHEDULE     6
+#define ARMV6M_PENDSV_SWI_USBD_CDC_RECEIVE  6
+#define ARMV6M_PENDSV_SWI_USBD_CDC_TRANSMIT 7
+#define ARMV6M_PENDSV_SWI_USBD_HID_TRANSMIT 8
+#define ARMV6M_PENDSV_SWI_WORK_SCHEDULE     9
 
 #define SWI_RADIO_IRQHandler                SWI0_IRQHandler
 #define SWI_EXTI_IRQHandler                 SWI1_IRQHandler
@@ -91,7 +95,10 @@ extern void SWI31_IRQHandler(void);
 #define SWI_RTC_MODIFY_IRQHandler           SWI3_IRQHandler
 #define SWI_RTC_ALARM_IRQHandler            SWI4_IRQHandler
 #define SWI_RTC_TIMER_IRQHandler            SWI5_IRQHandler
-#define SWI_WORK_SCHEDULE_IRQHandler        SWI6_IRQHandler
+#define SWI_USBD_CDC_RECEIVE_IRQHandler     SWI6_IRQHandler
+#define SWI_USBD_CDC_TRANSMIT_IRQHandler    SWI7_IRQHandler
+#define SWI_USBD_HID_TRANSMIT_IRQHandler    SWI8_IRQHandler
+#define SWI_WORK_SCHEDULE_IRQHandler        SWI9_IRQHandler
   
 #ifdef __cplusplus
 }

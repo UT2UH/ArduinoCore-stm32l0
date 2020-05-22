@@ -51,13 +51,12 @@ typedef struct _stm32l0_usbd_cdc_device_t {
     struct _USBD_HandleTypeDef     *USBD;
     volatile uint8_t               rx_busy;
     volatile uint8_t               tx_busy;
-    stm32l0_lptim_timeout_t        tx_timeout;
-    stm32l0_lptim_timeout_t        dfu_timeout;
+    uint32_t                       tx_timeout;
+    uint32_t                       dfu_timeout;
     stm32l0_usbd_cdc_t             *instances[STM32L0_USBD_CDC_INSTANCE_COUNT];
 } stm32l0_usbd_cdc_device_t;
 
 static stm32l0_usbd_cdc_device_t stm32l0_usbd_cdc_device;
-
 
 static void stm32l0_usbd_cdc_rx_ready(uint8_t *data, uint32_t length)
 {
@@ -123,36 +122,13 @@ static void stm32l0_usbd_cdc_rx_start(void)
     }
 }
 
-static void stm32l0_usbd_cdc_tx_timeout(void)
-{
-    stm32l0_usbd_cdc_t *usbd_cdc = stm32l0_usbd_cdc_device.instances[0];
-    stm32l0_usbd_cdc_done_callback_t callback;
-    void *context;
-
-    if (armv6m_atomic_casb(&stm32l0_usbd_cdc_device.tx_busy, USBD_CDC_TX_BUSY, USBD_CDC_TX_TIMEOUT) == USBD_CDC_TX_BUSY)
-    {
-        if (usbd_cdc && (usbd_cdc->state == STM32L0_USBD_CDC_STATE_READY))
-        {
-            callback = usbd_cdc->tx_callback;
-            context = usbd_cdc->tx_context;
-
-            usbd_cdc->tx_busy = false;
-
-            if (callback)
-            {
-                (*callback)(context);
-            }
-        }
-    }
-}
-
 static void stm32l0_usbd_cdc_tx_done(void)
 {
     stm32l0_usbd_cdc_t *usbd_cdc = stm32l0_usbd_cdc_device.instances[0];
     stm32l0_usbd_cdc_done_callback_t callback;
     void *context;
 
-    stm32l0_lptim_timeout_stop(&stm32l0_usbd_cdc_device.tx_timeout);
+    stm32l0_usbd_cdc_device.tx_timeout = 0;
     
     if (armv6m_atomic_casb(&stm32l0_usbd_cdc_device.tx_busy, USBD_CDC_TX_BUSY, USBD_CDC_TX_IDLE) == USBD_CDC_TX_BUSY)
     {
@@ -175,6 +151,55 @@ static void stm32l0_usbd_cdc_tx_done(void)
     }
 }
 
+static void stm32l0_usbd_cdc_sof(void)
+{
+    stm32l0_usbd_cdc_t *usbd_cdc = stm32l0_usbd_cdc_device.instances[0];
+    stm32l0_usbd_cdc_done_callback_t callback;
+    void *context;
+
+    if (stm32l0_usbd_cdc_device.tx_timeout) 
+    {
+        if (stm32l0_usbd_cdc_device.tx_timeout == 1)
+        {
+            stm32l0_usbd_cdc_device.tx_timeout = 0;
+
+            if (armv6m_atomic_casb(&stm32l0_usbd_cdc_device.tx_busy, USBD_CDC_TX_BUSY, USBD_CDC_TX_TIMEOUT) == USBD_CDC_TX_BUSY)
+            {
+                if (usbd_cdc && (usbd_cdc->state == STM32L0_USBD_CDC_STATE_READY))
+                {
+                    callback = usbd_cdc->tx_callback;
+                    context = usbd_cdc->tx_context;
+                    
+                    usbd_cdc->tx_busy = false;
+                    
+                    if (callback)
+                    {
+                        (*callback)(context);
+                    }
+                }
+            }
+        }
+        else
+        {
+            stm32l0_usbd_cdc_device.tx_timeout--;
+        }
+    }
+
+    if (stm32l0_usbd_cdc_device.dfu_timeout) 
+    {
+        if (stm32l0_usbd_cdc_device.dfu_timeout == 1)
+        {
+            stm32l0_usbd_cdc_device.dfu_timeout = 0;
+
+            stm32l0_system_dfu();
+        }
+        else
+        {
+            stm32l0_usbd_cdc_device.dfu_timeout--;
+        }
+    }
+}
+
 static void stm32l0_usbd_cdc_tx_start(void)
 {
     stm32l0_usbd_cdc_t *usbd_cdc = stm32l0_usbd_cdc_device.instances[0];
@@ -188,9 +213,7 @@ static void stm32l0_usbd_cdc_tx_start(void)
         USBD_CDC_SetTxBuffer(stm32l0_usbd_cdc_device.USBD, usbd_cdc->tx_data, usbd_cdc->tx_count);
         USBD_CDC_TransmitPacket(stm32l0_usbd_cdc_device.USBD);
         
-        stm32l0_lptim_timeout_start(&stm32l0_usbd_cdc_device.tx_timeout, stm32l0_lptim_millis_to_ticks(STM32L0_USBD_CDC_TX_TIMEOUT), (stm32l0_lptim_callback_t)stm32l0_usbd_cdc_tx_timeout);
-                                    
-        NVIC_EnableIRQ(USB_IRQn);
+        stm32l0_usbd_cdc_device.tx_timeout = STM32L0_USBD_CDC_TX_TIMEOUT;
     }
     else
     {
@@ -205,6 +228,10 @@ static void stm32l0_usbd_cdc_tx_start(void)
         }
     }
     
+    if (stm32l0_usbd_cdc_device.USBD)
+    {
+        NVIC_EnableIRQ(USB_IRQn);
+    }
 }
 
 static void stm32l0_usbd_cdc_init(USBD_HandleTypeDef *USBD)
@@ -212,9 +239,8 @@ static void stm32l0_usbd_cdc_init(USBD_HandleTypeDef *USBD)
     stm32l0_usbd_cdc_device.USBD = USBD;
     stm32l0_usbd_cdc_device.rx_busy = USBD_CDC_RX_IDLE;
     stm32l0_usbd_cdc_device.tx_busy = USBD_CDC_TX_IDLE;
-
-    stm32l0_lptim_timeout_create(&stm32l0_usbd_cdc_device.tx_timeout);
-    stm32l0_lptim_timeout_create(&stm32l0_usbd_cdc_device.dfu_timeout);
+    stm32l0_usbd_cdc_device.tx_timeout = 0;
+    stm32l0_usbd_cdc_device.dfu_timeout = 0;
 
     stm32l0_usbd_cdc_info.dwDTERate = 115200;
     stm32l0_usbd_cdc_info.bCharFormat = 0;
@@ -231,8 +257,8 @@ static void stm32l0_usbd_cdc_deinit(void)
     stm32l0_usbd_cdc_done_callback_t callback;
     void *context;
 
-    stm32l0_lptim_timeout_stop(&stm32l0_usbd_cdc_device.tx_timeout);
-    stm32l0_lptim_timeout_stop(&stm32l0_usbd_cdc_device.dfu_timeout);
+    stm32l0_usbd_cdc_device.tx_timeout = 0;
+    stm32l0_usbd_cdc_device.dfu_timeout = 0;
 
     if (armv6m_atomic_casb(&stm32l0_usbd_cdc_device.tx_busy, USBD_CDC_TX_BUSY, USBD_CDC_TX_IDLE) == USBD_CDC_TX_BUSY)
     {
@@ -287,11 +313,11 @@ static void stm32l0_usbd_cdc_control(uint8_t command, uint8_t *data, uint16_t le
         {
             if ((stm32l0_usbd_cdc_info.dwDTERate == 1200) && !(stm32l0_usbd_cdc_info.lineState & 1))
             {
-                stm32l0_lptim_timeout_start(&stm32l0_usbd_cdc_device.dfu_timeout, stm32l0_lptim_millis_to_ticks(STM32L0_USBD_CDC_DFU_TIMEOUT), (stm32l0_lptim_callback_t)stm32l0_system_dfu);
+                stm32l0_usbd_cdc_device.dfu_timeout = STM32L0_USBD_CDC_DFU_TIMEOUT;
             }
             else
             {
-                stm32l0_lptim_timeout_stop(&stm32l0_usbd_cdc_device.dfu_timeout);
+                stm32l0_usbd_cdc_device.dfu_timeout = 0;
             }
         }
     }
@@ -303,6 +329,7 @@ const USBD_CDC_ItfTypeDef stm32l0_usbd_cdc_interface = {
     stm32l0_usbd_cdc_control,
     stm32l0_usbd_cdc_rx_ready,
     stm32l0_usbd_cdc_tx_done,
+    stm32l0_usbd_cdc_sof,
 };
 
 bool stm32l0_usbd_cdc_create(stm32l0_usbd_cdc_t *usbd_cdc)
@@ -365,7 +392,7 @@ bool stm32l0_usbd_cdc_enable(stm32l0_usbd_cdc_t *usbd_cdc, uint8_t *rx_data, uin
     }
     else
     {
-        armv6m_pendsv_enqueue((armv6m_pendsv_routine_t)&stm32l0_usbd_cdc_rx_start, NULL, 0);
+        armv6m_pendsv_raise(ARMV6M_PENDSV_SWI_USBD_CDC_RECEIVE);
     }
 
     return true;
@@ -393,7 +420,7 @@ uint32_t stm32l0_usbd_cdc_count(stm32l0_usbd_cdc_t *usbd_cdc)
     return usbd_cdc->rx_count;
 }
 
-uint32_t stm32l0_usbd_cdc_receive(stm32l0_usbd_cdc_t *usbd_cdc, uint8_t *rx_data, uint32_t rx_count, bool peek)
+uint32_t stm32l0_usbd_cdc_input(stm32l0_usbd_cdc_t *usbd_cdc, uint8_t *rx_data, uint32_t rx_count, bool consume)
 {
     uint32_t rx_size, rx_read, rx_wrap;
 
@@ -437,7 +464,7 @@ uint32_t stm32l0_usbd_cdc_receive(stm32l0_usbd_cdc_t *usbd_cdc, uint8_t *rx_data
         rx_read += rx_size;
     }
 
-    if (!peek)
+    if (consume)
     {
         usbd_cdc->rx_wrap = rx_wrap;
         usbd_cdc->rx_read = rx_read;
@@ -453,7 +480,7 @@ uint32_t stm32l0_usbd_cdc_receive(stm32l0_usbd_cdc_t *usbd_cdc, uint8_t *rx_data
             }
             else
             {
-                armv6m_pendsv_enqueue((armv6m_pendsv_routine_t)&stm32l0_usbd_cdc_rx_start, NULL, 0);
+                armv6m_pendsv_raise(ARMV6M_PENDSV_SWI_USBD_CDC_RECEIVE);
             }
         }
     }
@@ -463,8 +490,6 @@ uint32_t stm32l0_usbd_cdc_receive(stm32l0_usbd_cdc_t *usbd_cdc, uint8_t *rx_data
 
 bool stm32l0_usbd_cdc_transmit(stm32l0_usbd_cdc_t *usbd_cdc, const uint8_t *tx_data, uint32_t tx_count, stm32l0_usbd_cdc_done_callback_t callback, void *context)
 {
-    bool success = true;
-
     if (usbd_cdc->state != STM32L0_USBD_CDC_STATE_READY)
     {
         return false;
@@ -486,10 +511,10 @@ bool stm32l0_usbd_cdc_transmit(stm32l0_usbd_cdc_t *usbd_cdc, const uint8_t *tx_d
     }
     else
     {
-        success = armv6m_pendsv_enqueue((armv6m_pendsv_routine_t)&stm32l0_usbd_cdc_tx_start, NULL, 0);
+        armv6m_pendsv_raise(ARMV6M_PENDSV_SWI_USBD_CDC_TRANSMIT);
     }
     
-    return success;
+    return true;
 }
 
 bool stm32l0_usbd_cdc_done(stm32l0_usbd_cdc_t *usbd_cdc)
@@ -497,10 +522,12 @@ bool stm32l0_usbd_cdc_done(stm32l0_usbd_cdc_t *usbd_cdc)
     return !usbd_cdc->tx_busy;
 }
 
-void stm32l0_usbd_cdc_poll(stm32l0_usbd_cdc_t *usbd_cdc)
+void SWI_USBD_CDC_RECEIVE_IRQHandler(void)
 {
-    if (stm32l0_usbd_cdc_device.USBD)
-    {
-        USB_IRQHandler();
-    }
+    stm32l0_usbd_cdc_rx_start();
+}
+
+void SWI_USBD_CDC_TRANSMIT_IRQHandler(void)
+{
+    stm32l0_usbd_cdc_tx_start();
 }
