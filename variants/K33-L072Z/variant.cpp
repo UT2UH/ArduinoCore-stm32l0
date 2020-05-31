@@ -67,13 +67,14 @@ extern const unsigned int g_PWMInstances[PWM_INSTANCE_COUNT] = {
     STM32L0_TIMER_INSTANCE_TIM22,
 };
 
+
 static uint8_t stm32l0_usart1_rx_fifo[32];
 
 extern const stm32l0_uart_params_t g_SerialParams = {
     STM32L0_UART_INSTANCE_USART1,
     STM32L0_UART_IRQ_PRIORITY,
-    STM32L0_DMA_CHANNEL_DMA1_CH5_USART1_RX,
-    STM32L0_DMA_CHANNEL_DMA1_CH4_USART1_TX,
+    STM32L0_DMA_CHANNEL_DMA1_CH3_USART1_RX,
+    STM32L0_DMA_CHANNEL_NONE,
     &stm32l0_usart1_rx_fifo[0],
     sizeof(stm32l0_usart1_rx_fifo),
     {
@@ -109,6 +110,7 @@ extern const stm32l0_i2c_params_t g_WireParams = {
         STM32L0_GPIO_PIN_PB9_I2C1_SDA,
     },
 };
+
 
 void RadioInit( const RadioEvents_t *events, uint32_t freq )
 {
