@@ -89,6 +89,8 @@ static const uint8_t A0  = PIN_A0;
 
 #define PIN_SERIAL_RX        (0ul)
 #define PIN_SERIAL_TX        (1ul)
+#define PIN_SERIAL_RTS       (16ul)
+#define PIN_SERIAL_CTS       (3ul)
 
 /*
  * Wire Interfaces

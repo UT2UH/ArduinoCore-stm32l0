@@ -80,8 +80,10 @@ extern const stm32l0_uart_params_t g_SerialParams = {
     {
         STM32L0_GPIO_PIN_PA3_USART2_RX,
         STM32L0_GPIO_PIN_PA2_USART2_TX,
+        //STM32L0_GPIO_PIN_PA4_USART2_CK,
+        //STM32L0_GPIO_PIN_PA0_USART2_CTS,
         STM32L0_GPIO_PIN_NONE,
-        STM32L0_GPIO_PIN_NONE,
+        STM32L0_GPIO_PIN_NONE,        
     },
 };
 

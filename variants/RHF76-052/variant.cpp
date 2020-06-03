@@ -152,5 +152,4 @@ void RadioInit( const RadioEvents_t *events, uint32_t freq )
 
 void initVariant()
 {
-    CMWX1ZZABZ_Initialize(STM32L0_GPIO_PIN_NONE, STM32L0_GPIO_PIN_NONE);
 }
