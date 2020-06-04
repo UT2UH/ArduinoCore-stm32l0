@@ -123,29 +123,6 @@ static const uint8_t SS   = 10;
 static const uint8_t MOSI = PIN_SPI_MOSI;
 static const uint8_t MISO = PIN_SPI_MISO;
 static const uint8_t SCK  = PIN_SPI_SCK;
-/*
-#define PIN_RADIO_RESET             (16u)
-#define PIN_RADIO_NSS               (17u)
-#define PIN_RADIO_INT               (18u)
-#define PIN_RADIO_DIO1              (19u)
-#define PIN_RADIO_DIO2              (20u)
-#define PIN_RADIO_DIO3              (21u)
-#define PIN_ANT_SWITCH_RX           (22u)   //PA2 FEM_CPS in RHF76  
-#define PIN_ANT_SWITCH_TX_RFO       (23u)   //PA1 FEM_CTX in RHF76
-#define PIN_ANT_SWITCH_TX_BOOST     (24u)   //Not available
-#define PIN_TCXO_VCC                (25u)   //Not available
-
-#define RADIO_RESET                 STM32L0_GPIO_PIN_PC0
-#define RADIO_NSS                   STM32L0_GPIO_PIN_PA15
-#define RADIO_DIO_0                 STM32L0_GPIO_PIN_PB4
-#define RADIO_DIO_1                 STM32L0_GPIO_PIN_PB1
-#define RADIO_DIO_2                 STM32L0_GPIO_PIN_PB0
-#define RADIO_DIO_3                 STM32L0_GPIO_PIN_PC13
-#define RADIO_TCXO_VCC              STM32L0_GPIO_PIN_PH1
-#define RADIO_ANT_SWITCH_RX         STM32L0_GPIO_PIN_PA1
-#define RADIO_ANT_SWITCH_TX_RFO     STM32L0_GPIO_PIN_PC2
-#define RADIO_ANT_SWITCH_TX_BOOST   STM32L0_GPIO_PIN_PC1
-*/
 
 #define PWM_INSTANCE_COUNT    2
 
