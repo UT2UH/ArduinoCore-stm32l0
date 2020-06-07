@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2020 Thomas Roell.  All rights reserved.
+ * Copyright (c) 2019-2020 Thomas Roell.  All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -26,48 +26,36 @@
  * WITH THE SOFTWARE.
  */
 
-#pragma once
+#if !defined(_DOSFS_STORAGE_H)
+#define _DOSFS_STORAGE_H
 
-#include <cstddef>
+#include <stdbool.h>
+#include <stdint.h>
+#include <string.h>
 
-class Callback {
-public:
-    Callback() : _callback(nullptr), _context(nullptr) {  }
+#ifdef __cplusplus
+ extern "C" {
+#endif
 
-    Callback(void (*function)(void)) : _callback((void (*)(void*))function), _context(nullptr) { }
+typedef struct _dosfs_storage_interface_t {
+    bool (*Init)(uint8_t **p_cache_data, const uint8_t **p_inquiry_data);
+    bool (*DeInit)(void);
+    bool (*IsReady)(void);
+    bool (*GetCapacity)(uint32_t *pblock_count, uint32_t *p_block_size);
+    bool (*GetWriteProtected)(bool *p_write_protected);
+    bool (*GetChanged)(bool *p_changed);
+    bool (*StartStopUnit)(bool start, bool loej);
+    bool (*PreventAllowMediumRemoval)(bool prevent);
+    bool (*Acquire)(void);
+    void (*Release)(void);
+    bool (*Read)(uint8_t *data, uint32_t blk_addr, uint32_t blk_len, bool release);
+    bool (*Write)(const uint8_t *data, uint32_t blk_addr, uint32_t blk_len, bool release);
+} dosfs_storage_interface_t;
 
-    template<typename T>
-    Callback(void (T::*method)(), T *object) { bind(&method, object); }
+extern const dosfs_storage_interface_t dosfs_storage_interface;
+     
+#ifdef __cplusplus
+}
+#endif
 
-    template<typename T>
-    Callback(void (T::*method)() const, const T *object) { bind(&method, object); }
-
-    template<typename T>
-    Callback(void (T::*method)() volatile, volatile T *object) { bind(&method, object); }
-
-    template<typename T>
-    Callback(void (T::*method)() const volatile, const volatile T *object) { bind(&method, object); }
-
-    template<typename T>
-    Callback(void (T::*method)(), T &object) { bind(&method, &object); }
-
-    template<typename T>
-    Callback(void (T::*method)() const, const T &object) { bind(&method, &object); }
-
-    template<typename T>
-    Callback(void (T::*method)() volatile, volatile T &object) { bind(&method, &object); }
-
-    template<typename T>
-    Callback(void (T::*method)() const volatile, const volatile T &object) { bind(&method, &object); }
-
-    bool queue(bool wakeup);
-    void call();
-
-    operator bool() { return (_callback != nullptr); }
-
-private:
-    void (*_callback)(void*);
-    void *_context;
-
-    void bind(const void *method, const void *object);
-};
+#endif /*_DOSFS_STORAGE_H */

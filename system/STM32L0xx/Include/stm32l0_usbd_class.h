@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2020 Thomas Roell.  All rights reserved.
+ * Copyright (c) 2019-2020 Thomas Roell.  All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -26,48 +26,35 @@
  * WITH THE SOFTWARE.
  */
 
-#pragma once
+#if !defined(_STM32L0_USBD_CLASS_H)
+#define _STM32L0_USBD_CLASS_H
 
-#include <cstddef>
+#include "stm32l0xx.h"
+#include "usbd_ioreq.h"
 
-class Callback {
-public:
-    Callback() : _callback(nullptr), _context(nullptr) {  }
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-    Callback(void (*function)(void)) : _callback((void (*)(void*))function), _context(nullptr) { }
+extern uint8_t USBD_CDC_Init(USBD_HandleTypeDef *pdev,  uint8_t cfgidx);
+extern uint8_t USBD_CDC_DeInit(USBD_HandleTypeDef *pdev, uint8_t cfgidx);
+extern uint8_t USBD_CDC_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req);
+extern uint8_t USBD_CDC_EP0_RxReady(USBD_HandleTypeDef *pdev);
+extern uint8_t USBD_CDC_DataIn(USBD_HandleTypeDef *pdev, uint8_t epnum);
+extern uint8_t USBD_CDC_DataOut(USBD_HandleTypeDef *pdev, uint8_t epnum);
+extern uint8_t USBD_CDC_SOF(USBD_HandleTypeDef *pdev);
 
-    template<typename T>
-    Callback(void (T::*method)(), T *object) { bind(&method, object); }
+extern uint8_t USBD_MSC_Init(USBD_HandleTypeDef *pdev, uint8_t cfgidx);
+extern uint8_t USBD_MSC_DeInit(USBD_HandleTypeDef *pdev, uint8_t cfgidx);
+extern uint8_t USBD_MSC_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req);
+extern uint8_t USBD_MSC_DataIn(USBD_HandleTypeDef *pdev, uint8_t epnum);
+extern uint8_t USBD_MSC_DataOut(USBD_HandleTypeDef *pdev, uint8_t epnum);
 
-    template<typename T>
-    Callback(void (T::*method)() const, const T *object) { bind(&method, object); }
+extern void USBD_CDC_Initialize(USBD_HandleTypeDef *pdev);
+extern void USBD_CDC_MSC_Initialize(USBD_HandleTypeDef *pdev);
+  
+#ifdef __cplusplus
+}
+#endif
 
-    template<typename T>
-    Callback(void (T::*method)() volatile, volatile T *object) { bind(&method, object); }
-
-    template<typename T>
-    Callback(void (T::*method)() const volatile, const volatile T *object) { bind(&method, object); }
-
-    template<typename T>
-    Callback(void (T::*method)(), T &object) { bind(&method, &object); }
-
-    template<typename T>
-    Callback(void (T::*method)() const, const T &object) { bind(&method, &object); }
-
-    template<typename T>
-    Callback(void (T::*method)() volatile, volatile T &object) { bind(&method, &object); }
-
-    template<typename T>
-    Callback(void (T::*method)() const volatile, const volatile T &object) { bind(&method, &object); }
-
-    bool queue(bool wakeup);
-    void call();
-
-    operator bool() { return (_callback != nullptr); }
-
-private:
-    void (*_callback)(void*);
-    void *_context;
-
-    void bind(const void *method, const void *object);
-};
+#endif /* _STM32L0_STM32L0_USBD_CLASS_H */
