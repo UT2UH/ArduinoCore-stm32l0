@@ -62,8 +62,8 @@ extern "C"
  *----------------------------------------------------------------------------*/
 
 // Number of pins defined in PinDescription array
-#define PINS_COUNT           (20u)
-#define NUM_DIGITAL_PINS     (19u)
+#define PINS_COUNT           (22u)
+#define NUM_DIGITAL_PINS     (21u)
 #define NUM_ANALOG_INPUTS    (1u)
 #define NUM_ANALOG_OUTPUTS   (0u)
 
@@ -80,20 +80,23 @@ static const uint8_t A0  = PIN_A0;
  * LEDs
  */
 
+#define PIN_LED_RED          (8ul)
 #define PIN_LED_GRN          (2ul)
 #define PIN_LED_BLU          (5ul)
-#define PIN_LED_RED          (8ul)
 
-#define LED_BUILTIN          PIN_LED_GRN
+#define LED_BUILTIN          PIN_LED_BLU
 
 /*
  * Serial interfaces
  */
 
-#define SERIAL_INTERFACES_COUNT 2
+#define SERIAL_INTERFACES_COUNT 3
 
 #define PIN_SERIAL1_RX       (0ul)
 #define PIN_SERIAL1_TX       (1ul)
+
+#define PIN_SERIAL2_RX       (20ul)
+#define PIN_SERIAL2_TX       (21ul)
 
 /*
  * Wire Interfaces
@@ -140,6 +143,7 @@ static const uint8_t SCK  = PIN_SPI_SCK;
 #ifdef __cplusplus
 extern CDC  SerialUSB;
 extern Uart Serial1;
+extern Uart Serial2;
 #endif
 
 // These serial port names are intended to allow libraries and architecture-neutral
@@ -160,7 +164,9 @@ extern Uart Serial1;
 #define SERIAL_PORT_USBVIRTUAL      SerialUSB
 #define SERIAL_PORT_MONITOR         SerialUSB
 #define SERIAL_PORT_HARDWARE1       Serial1
+#define SERIAL_PORT_HARDWARE2       Serial2
 #define SERIAL_PORT_HARDWARE_OPEN1  Serial1
+#define SERIAL_PORT_HARDWARE_OPEN2  Serial2
 
 // Alias Serial to SerialUSB
 #define Serial                      SerialUSB
