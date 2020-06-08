@@ -37,6 +37,8 @@
 #define STM32L0_CONFIG_HSECLK             0
 #define STM32L0_CONFIG_SYSOPT             0
 
+#define STM32L0_CONFIG_ANTENNA_GAIN       -2.5f
+
 /** Master clock frequency */
 #define VARIANT_MCK                       F_CPU
 
