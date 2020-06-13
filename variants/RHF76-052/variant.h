@@ -37,8 +37,8 @@
 #define STM32L0_CONFIG_HSECLK             0
 #define STM32L0_CONFIG_SYSOPT             0
 
-#define STM32L0_CONFIG_PIN_VBAT           STM32L0_GPIO_PIN_PA3
-#define STM32L0_CONFIG_CHANNEL_VBAT       STM32L0_ADC_CHANNEL_3
+#define STM32L0_CONFIG_PIN_VBAT           STM32L0_GPIO_PIN_PA0
+#define STM32L0_CONFIG_CHANNEL_VBAT       STM32L0_ADC_CHANNEL_0
 #define STM32L0_CONFIG_VBAT_PERIOD        40
 #define STM32L0_CONFIG_VBAT_SCALE         ((float)1.27)
 
@@ -63,16 +63,16 @@ extern "C"
  *----------------------------------------------------------------------------*/
 
 // Number of pins defined in PinDescription array
-#define PINS_COUNT           (20u)
-#define NUM_DIGITAL_PINS     (18u)
+#define PINS_COUNT           (28u)
+#define NUM_DIGITAL_PINS     (26u)
 #define NUM_ANALOG_INPUTS    (2u)
 #define NUM_ANALOG_OUTPUTS   (0u)
 
 /*
  * Analog pins
  */
-#define PIN_A0               (16ul)
-#define PIN_A1               (17ul)
+#define PIN_A0               (26ul)
+#define PIN_A1               (27ul)
 
 static const uint8_t A0   =  PIN_A0;
 static const uint8_t A1   =  PIN_A1;
@@ -83,8 +83,8 @@ static const uint8_t A1   =  PIN_A1;
  * LEDs
  */
 
-#define PIN_LED1             (3ul)
-#define PIN_LED2             (4ul)
+#define PIN_LED1             (16ul)
+#define PIN_LED2             (21ul)
 #define LED_BUILTIN          PIN_LED1
 #define LED_TRX              PIN_LED2
 
@@ -94,35 +94,36 @@ static const uint8_t A1   =  PIN_A1;
 
 #define SERIAL_INTERFACES_COUNT 1
 
-#define PIN_SERIAL_RX        (6ul)
-#define PIN_SERIAL_TX        (5ul)
-#define PIN_SERIAL_CTS       (18ul)
-#define PIN_SERIAL_RTS       (19ul)
+#define PIN_SERIAL_TX        (22ul)
+#define PIN_SERIAL_RX        (23ul)
+#define PIN_SERIAL_CTS       (10ul)
+#define PIN_SERIAL_RTS       (11ul)
 
 /*
  * Wire Interfaces
  */
 #define WIRE_INTERFACES_COUNT 1
 
-#define PIN_WIRE_SDA         (14u)
-#define PIN_WIRE_SCL         (15u)
+#define PIN_WIRE_SCL         (24u)
+#define PIN_WIRE_SDA         (25u)
 
-static const uint8_t SDA = PIN_WIRE_SDA;
 static const uint8_t SCL = PIN_WIRE_SCL;
+static const uint8_t SDA = PIN_WIRE_SDA;
+
 
 /*
  * SPI Interfaces
  */
 #define SPI_INTERFACES_COUNT 1
 
-#define PIN_SPI_MOSI         (11u)
-#define PIN_SPI_MISO         (12u)
-#define PIN_SPI_SCK          (13u)
+#define PIN_SPI_SCK          (7u)
+#define PIN_SPI_MISO         (8u)
+#define PIN_SPI_MOSI         (9u)
 
-static const uint8_t SS   = 10;
-static const uint8_t MOSI = PIN_SPI_MOSI;
-static const uint8_t MISO = PIN_SPI_MISO;
+static const uint8_t SS   = 6;
 static const uint8_t SCK  = PIN_SPI_SCK;
+static const uint8_t MISO = PIN_SPI_MISO;
+static const uint8_t MOSI = PIN_SPI_MOSI;
 
 #define PWM_INSTANCE_COUNT    2
 

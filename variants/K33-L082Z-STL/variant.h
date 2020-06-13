@@ -76,10 +76,9 @@ static const uint8_t A0  = PIN_A0;
 /*
  * LEDs
  */
-
+#define PIN_LED_RED          (8ul)
 #define PIN_LED_GRN          (2ul)
 #define PIN_LED_BLU          (5ul)
-#define PIN_LED_RED          (8ul)
 
 #define LED_BUILTIN          PIN_LED_GRN
 

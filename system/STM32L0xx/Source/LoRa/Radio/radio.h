@@ -426,6 +426,7 @@ extern void SX1276Init( const RadioEvents_t *events, uint32_t freq );
 extern void CMWX1ZZABZ_Initialize( uint8_t pin_tcxo, uint16_t pin_stsafe );
 extern void SX1272MB2DAS_Initialize( void );
 extern void WMSGSM42_Initialize( void );
+extern void RHF76_052_Initialize( uint8_t pin_tcxo, uint16_t pin_stsafe );
 
 #ifdef __cplusplus
 }
